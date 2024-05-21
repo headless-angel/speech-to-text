@@ -24,15 +24,17 @@ class _SpeechRecognitionExampleState extends State<SpeechRecognitionExample> {
       onStatus: (val) => print('onStatus: $val'),
       onError: (val) {
         print('onError: $val');
-
-        setState(() => _isListening = false);
       },
     );
     if (available) {
-      setState(() => _isListening = true);
+      setState(() {
+        _isListening = true;
+      });
       _startListening();
     } else {
-      setState(() => _isListening = false);
+      setState(() {
+        _isListening = false;
+      });
     }
   }
 
@@ -47,12 +49,20 @@ class _SpeechRecognitionExampleState extends State<SpeechRecognitionExample> {
           _isListening = false;
         }
       }),
+      listenFor: Duration(seconds: 10), // Optional: limit listening duration
+      onSoundLevelChange: (level) =>
+          print('Sound level: $level'), // Optional: track sound level
+      cancelOnError: true, // Optional: cancel on error
+      listenMode:
+          stt.ListenMode.confirmation, // Optional: change listening mode
     );
   }
 
   void _stopListening() {
     _speech?.stop();
-    setState(() => _isListening = false);
+    setState(() {
+      _isListening = false;
+    });
   }
 
   Widget _buildParsedText() {
@@ -64,47 +74,23 @@ class _SpeechRecognitionExampleState extends State<SpeechRecognitionExample> {
       String quantity = match.group(2) ?? "";
       String unit = match.group(3) ?? "";
 
-      if (name.isNotEmpty &&
-          quantity.isNotEmpty &&
-          unit != null &&
-          unit.isNotEmpty) {
+      if (name.isNotEmpty && quantity.isNotEmpty) {
         return Column(
           children: [
             _productWidget('Product', name),
             _productWidget('Quantity', quantity),
-            _productWidget('Unit', unit),
+            if (unit != null && unit.isNotEmpty) _productWidget('Unit', unit),
+            if (unit == null || unit.isEmpty)
+              _productErrorWidget('Unit is missing.')
           ],
         );
-      } else if (unit == null || unit.isEmpty) {
-        return _productErrorWidget('Unit is missing.');
       }
-    }
-
-    if (!_text.contains('quantity')) {
-      return _productErrorWidget('Quantity word is missing.');
-    }
-
-    if (_text.contains('quantity') && !_text.contains(RegExp(r'\d+'))) {
-      return _productErrorWidget('Quantity is missing.');
-    }
-
-    if (_text.contains(RegExp(r'quantity\s+\d+')) &&
-        !_text.contains(RegExp(r'\w+$'))) {
-      return _productErrorWidget('Unit is missing.');
-    }
-
-    if (_text.contains(RegExp(r'\d+\s*\w+$')) && !_text.contains('quantity')) {
-      return _productErrorWidget('Quantity word is missing.');
-    }
-
-    if (_text.startsWith('quantity')) {
-      return _productErrorWidget('Product is missing.');
     }
 
     return _productErrorWidget('Invalid input.');
   }
 
-  Widget _productWidget(key, value) {
+  Widget _productWidget(String key, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       child: Row(
@@ -125,14 +111,14 @@ class _SpeechRecognitionExampleState extends State<SpeechRecognitionExample> {
     );
   }
 
-  Widget _productErrorWidget(error) {
+  Widget _productErrorWidget(String error) {
     return Align(
-        alignment: Alignment.center,
-        child: Text(
-          'Error: $error',
-          style:
-              const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-        ));
+      alignment: Alignment.center,
+      child: Text(
+        'Error: $error',
+        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+      ),
+    );
   }
 
   @override
