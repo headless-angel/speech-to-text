@@ -49,12 +49,10 @@ class _SpeechRecognitionExampleState extends State<SpeechRecognitionExample> {
           _isListening = false;
         }
       }),
-      listenFor: Duration(seconds: 10), // Optional: limit listening duration
-      onSoundLevelChange: (level) =>
-          print('Sound level: $level'), // Optional: track sound level
-      cancelOnError: true, // Optional: cancel on error
-      listenMode:
-          stt.ListenMode.confirmation, // Optional: change listening mode
+      listenFor: Duration(seconds: 10),
+      onSoundLevelChange: (level) => print('Sound level: $level'),
+      cancelOnError: true,
+      listenMode: stt.ListenMode.confirmation,
     );
   }
 
